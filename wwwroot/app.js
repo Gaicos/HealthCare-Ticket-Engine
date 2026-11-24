@@ -44,6 +44,7 @@
     filterTabs: Array.from(document.querySelectorAll('.filter-tab')),
     searchInput: document.getElementById('searchInput'),
     refreshBtn: document.getElementById('refreshBtn'),
+    resetDemoBtn: document.getElementById('resetDemoBtn'),
     loadingSkeleton: document.getElementById('loadingSkeleton'),
     ticketList: document.getElementById('ticketList'),
     emptyState: document.getElementById('emptyState'),
@@ -546,6 +547,39 @@
     }
   }
 
+  async function handleResetDemo() {
+    el.resetDemoBtn.disabled = true;
+
+    try {
+      state.searchQuery = '';
+      el.searchInput.value = '';
+      state.currentFilter = 'ALL';
+
+      el.filterTabs.forEach((tab) => {
+        const isAll = tab.dataset.status === 'ALL';
+        tab.classList.toggle('is-active', isAll);
+        tab.setAttribute('aria-selected', String(isAll));
+      });
+
+      const tickets = await apiRequest(
+        'POST',
+        '/api/incidents/reset-demo',
+        null,
+        'Restaurou a fila com os 3 chamados hospitalares de demonstração.'
+      );
+
+      state.allTickets = tickets;
+      state.visibleTickets = tickets;
+      updateKpis();
+      renderTickets();
+      showToast('Dados de demonstração restaurados!');
+    } catch (err) {
+      showToast(err.message || 'Erro ao restaurar os dados de demonstração.', true);
+    } finally {
+      el.resetDemoBtn.disabled = false;
+    }
+  }
+
   function bindEvents() {
     el.filterTabs.forEach((tab) => {
       tab.addEventListener('click', () => {
@@ -569,6 +603,7 @@
     });
 
     el.refreshBtn.addEventListener('click', () => refreshDashboard(true));
+    el.resetDemoBtn.addEventListener('click', handleResetDemo);
 
     el.emptyResetBtn.addEventListener('click', () => {
       state.searchQuery = '';

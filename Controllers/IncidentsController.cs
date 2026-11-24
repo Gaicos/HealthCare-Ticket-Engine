@@ -197,4 +197,23 @@ public class IncidentsController : ControllerBase
 
         return Ok(updated);
     }
+
+    /// <summary>
+    /// Restaura a fila em memória para os 3 chamados hospitalares iniciais de demonstração.
+    /// </summary>
+    /// <param name="cancellationToken">Token de cancelamento da requisição.</param>
+    /// <response code="200">Fila de demonstração restaurada com sucesso.</response>
+    [HttpPost("reset-demo")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<IncidentTicket>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyCollection<IncidentTicket>>> ResetDemo(
+        CancellationToken cancellationToken)
+    {
+        var tickets = await _repository.ResetSeedDataAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Fila de demonstração restaurada com {TicketCount} chamados iniciais.",
+            tickets.Count);
+
+        return Ok(tickets);
+    }
 }

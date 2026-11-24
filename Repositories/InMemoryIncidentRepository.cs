@@ -11,6 +11,7 @@ public class InMemoryIncidentRepository : IIncidentRepository
     // A coleção é estática e thread-safe para preservar o estado entre requisições HTTP
     // mantendo o registro DI como Scoped (pronto para futura troca por EF Core DbContext).
     private static readonly ConcurrentDictionary<Guid, IncidentTicket> _tickets = SeedInitialData();
+    private static readonly object _resetLock = new();
 
     public Task<IReadOnlyCollection<IncidentTicket>> GetAllAsync(
         IncidentStatus? status = null,
@@ -64,6 +65,22 @@ public class InMemoryIncidentRepository : IIncidentRepository
 
         _tickets[ticket.Id] = ticket;
         return Task.FromResult<IncidentTicket?>(ticket);
+    }
+
+    public Task<IReadOnlyCollection<IncidentTicket>> ResetSeedDataAsync(
+        CancellationToken cancellationToken = default)
+    {
+        lock (_resetLock)
+        {
+            _tickets.Clear();
+
+            foreach (var entry in SeedInitialData())
+            {
+                _tickets[entry.Key] = entry.Value;
+            }
+        }
+
+        return GetAllAsync(null, cancellationToken);
     }
 
     private static ConcurrentDictionary<Guid, IncidentTicket> SeedInitialData()

@@ -22,4 +22,7 @@ public interface IIncidentRepository
     Task<IncidentTicket?> UpdateAsync(
         IncidentTicket ticket,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<IncidentTicket>> ResetSeedDataAsync(
+        CancellationToken cancellationToken = default);
 }

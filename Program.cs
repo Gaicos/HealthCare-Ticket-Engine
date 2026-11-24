@@ -2,9 +2,24 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using HealthCare_Ticket_Engine.Middlewares;
 using HealthCare_Ticket_Engine.Repositories;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var port = Environment.GetEnvironmentVariable("PORT");
+var isCloudContainer = !string.IsNullOrWhiteSpace(port);
+if (isCloudContainer)
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -42,6 +57,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 
 app.UseSwagger();
@@ -54,12 +70,19 @@ app.UseSwaggerUI(options =>
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-if (!app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment() && !isCloudContainer)
 {
     app.UseHttpsRedirection();
 }
 
 app.UseAuthorization();
+
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "Healthy",
+    service = "HealthCare-Ticket-Engine",
+    timestamp = DateTime.UtcNow
+})).ExcludeFromDescription();
 
 app.MapControllers();
 

@@ -4,6 +4,7 @@
 ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-Web%20API-512BD4?style=flat-square)
 ![Swagger / OpenAPI](https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?style=flat-square&logo=swagger&logoColor=black)
 ![C#](https://img.shields.io/badge/C%23-12-239120?style=flat-square&logo=csharp)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)
 
 [🇧🇷 Português](#-português) | [🇺🇸 English](#-english)
 
@@ -52,6 +53,9 @@ HealthCare-Ticket-Engine/
 │   ├── index.html
 │   ├── styles.css
 │   └── app.js
+├── Dockerfile
+├── .dockerignore
+├── render.yaml
 ├── Program.cs
 ├── HealthCare-Ticket-Engine.csproj
 ├── HealthCare-Ticket-Engine.http
@@ -74,6 +78,26 @@ Acesse no navegador:
 - **Painel Web (Front-End)**: `http://localhost:5214/`
 - **API Técnica (Swagger UI)**: `http://localhost:5214/swagger` (ou `https://localhost:7074/swagger` com o perfil HTTPS)
 
+### ☁️ Demo Online e Deploy (Docker + Render)
+
+O repositório já inclui `Dockerfile` multi-stage (.NET 8) e `render.yaml` prontos para deploy gratuito no **Render**, com leitura automática da variável de ambiente `PORT`, suporte a cabeçalhos de proxy reverso (`ForwardedHeaders`), health check em `/health` e botão **Restaurar Demo** (`POST /api/incidents/reset-demo`).
+
+#### Rodar via Docker localmente
+
+```powershell
+docker build -t healthcare-ticket-engine .
+docker run -p 8080:8080 healthcare-ticket-engine
+```
+
+Acesse `http://localhost:8080/` (ou `http://localhost:8080/swagger`).
+
+#### Publicar grátis no Render
+
+1. Crie uma conta em [render.com](https://render.com) conectando seu GitHub.
+2. Clique em **New +** → **Blueprint** (ou **Web Service**) e selecione `Gaicos/HealthCare-Ticket-Engine`.
+3. O Render lerá automaticamente o `render.yaml` e o `Dockerfile` no plano **Free**.
+4. Ao finalizar o build, qualquer recrutador poderá abrir e testar a URL pública diretamente do navegador.
+
 ### 📡 Endpoints da API
 
 | Método | Rota | Descrição | Respostas |
@@ -83,6 +107,8 @@ Acesse no navegador:
 | `POST` | `/api/incidents` | Cria um novo incidente N2 com cálculo automático de SLA | `201`, `400` |
 | `PUT` | `/api/incidents/{id}/analyze` | Move um incidente `Aberto` para `EmAnalise` | `200`, `404`, `409` |
 | `PUT` | `/api/incidents/{id}/resolve` | Marca o incidente como `Resolvido` e grava `ResolvedAt` (UTC) | `200`, `404`, `409` |
+| `POST` | `/api/incidents/reset-demo` | Restaura os 3 chamados hospitalares iniciais para demonstração | `200` |
+| `GET` | `/health` | Health check da aplicação para monitoramento em nuvem | `200` |
 
 #### Exemplo de Payload (`POST /api/incidents`)
 
@@ -110,10 +136,10 @@ Acesse no navegador:
 
 ### 🗺️ Roadmap
 
+- [x] Containerização com Docker e blueprint de deploy para Render
 - [ ] Persistência com Entity Framework Core (SQL Server / PostgreSQL)
 - [ ] Testes unitários e de integração com xUnit + WebApplicationFactory
-- [ ] Containerização com Docker e Docker Compose
-- [ ] Transição explícita para `EmAnalise` e registro de notas de atendimento N2
+- [ ] Registro de notas de atendimento N2 e histórico de comentários
 
 ---
 
@@ -156,6 +182,15 @@ Open in your browser:
 - **Web Dashboard**: `http://localhost:5214/`
 - **Technical API (Swagger UI)**: `http://localhost:5214/swagger` (or `https://localhost:7074/swagger` when using the HTTPS profile)
 
+### ☁️ Live Demo & Cloud Deploy (Docker + Render)
+
+This repository includes a multi-stage `.NET 8` `Dockerfile` and a `render.yaml` Blueprint for free deployment on **Render**, featuring automatic `PORT` binding, reverse-proxy `ForwardedHeaders` support, a `/health` probe, and a one-click **Restaurar Demo** (`POST /api/incidents/reset-demo`) reset action.
+
+```powershell
+docker build -t healthcare-ticket-engine .
+docker run -p 8080:8080 healthcare-ticket-engine
+```
+
 ### 📡 API Endpoints
 
 | Method | Route | Description | Status Codes |
@@ -165,6 +200,8 @@ Open in your browser:
 | `POST` | `/api/incidents` | Creates a new N2 incident with automatic SLA deadline calculation | `201`, `400` |
 | `PUT` | `/api/incidents/{id}/analyze` | Moves an `Aberto` incident to `EmAnalise` | `200`, `404`, `409` |
 | `PUT` | `/api/incidents/{id}/resolve` | Marks an incident as `Resolvido` and sets `ResolvedAt` (UTC) | `200`, `404`, `409` |
+| `POST` | `/api/incidents/reset-demo` | Restores the 3 initial sample hospital incidents for live demos | `200` |
+| `GET` | `/health` | Health check probe for cloud container platforms | `200` |
 
 #### Sample Request (`POST /api/incidents`)
 
