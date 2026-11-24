@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthCare Ticket Engine — Central de Chamados Hospitalares</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">HealthCare Ticket Engine</span>
+          <span class="brand-pill">Suporte N2 Hospitalar</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <a
+          href="/swagger"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-outline"
+          title="Abrir documentação técnica interativa (GET, POST, PUT) no Swagger UI"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span>API Técnica (Swagger)</span>
+        </a>
+
+        <button type="button" id="openCreateModalBtn" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Abrir Chamado</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-copy">
+        <h1 id="heroTitle">Central de Chamados Hospitalares</h1>
+        <p>
+          Monitore falhas em sistemas médicos, priorize atendimentos críticos pelo prazo de SLA e registre soluções em poucos cliques.
+        </p>
+      </div>
+
+      <div class="sla-legend" aria-label="Prazos de atendimento SLA por prioridade">
+        <span class="sla-legend-title">Metas de SLA:</span>
+        <span class="sla-pill sla-critica"><span class="dot"></span>Crítica · 1h</span>
+        <span class="sla-pill sla-alta"><span class="dot"></span>Alta · 4h</span>
+        <span class="sla-pill sla-media"><span class="dot"></span>Média · 8h</span>
+        <span class="sla-pill sla-baixa"><span class="dot"></span>Baixa · 24h</span>
+      </div>
+    </section>
+
+    <section class="kpi-grid" aria-label="Indicadores de atendimento">
+      <article class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Total de Chamados</span>
+          <span class="kpi-icon kpi-icon-neutral" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+              <line x1="7" y1="9" x2="17" y2="9"></line>
+              <line x1="7" y1="13" x2="13" y2="13"></line>
+            </svg>
+          </span>
+        </div>
+        <div class="kpi-value" id="kpiTotal">—</div>
+        <p class="kpi-sub">Registros ativos e concluídos</p>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Aguardando Atendimento</span>
+          <span class="kpi-icon kpi-icon-open" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <polyline points="12 7 12 12 15 14"></polyline>
+            </svg>
+          </span>
+        </div>
+        <div class="kpi-value" id="kpiOpen">—</div>
+        <p class="kpi-sub">Prontos para triagem N2</p>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Em Análise N2</span>
+          <span class="kpi-icon kpi-icon-analysis" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+            </svg>
+          </span>
+        </div>
+        <div class="kpi-value" id="kpiAnalysis">—</div>
+        <p class="kpi-sub">Equipe técnica atuando agora</p>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Resolvidos</span>
+          <span class="kpi-icon kpi-icon-resolved" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </span>
+        </div>
+        <div class="kpi-value" id="kpiResolved">—</div>
+        <p class="kpi-sub" id="kpiSlaHint">Verificando prazos de SLA...</p>
+      </article>
+    </section>
+
+    <section class="toolbar" aria-label="Filtros e busca de chamados">
+      <div class="filter-tabs" role="tablist" aria-label="Filtrar por situação">
+        <button type="button" class="filter-tab is-active" data-status="ALL" role="tab" aria-selected="true">
+          Todos <span class="tab-count" id="countAll">0</span>
+        </button>
+        <button type="button" class="filter-tab" data-status="Aberto" role="tab" aria-selected="false">
+          Abertos <span class="tab-count" id="countAberto">0</span>
+        </button>
+        <button type="button" class="filter-tab" data-status="EmAnalise" role="tab" aria-selected="false">
+          Em Análise <span class="tab-count" id="countEmAnalise">0</span>
+        </button>
+        <button type="button" class="filter-tab" data-status="Resolvido" role="tab" aria-selected="false">
+          Resolvidos <span class="tab-count" id="countResolvido">0</span>
+        </button>
+      </div>
+
+      <div class="toolbar-right">
+        <label class="search-box" for="searchInput">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="Buscar por título, sistema afetado ou descrição..."
+            autocomplete="off"
+          >
+        </label>
+
+        <button type="button" id="refreshBtn" class="btn btn-subtle" title="Recarregar fila de chamados">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          <span>Atualizar</span>
+        </button>
+      </div>
+    </section>
+
+    <section aria-label="Lista de chamados" aria-live="polite">
+      <div id="loadingSkeleton" class="skeleton-list" hidden>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+
+      <div id="ticketList" class="ticket-list"></div>
+
+      <div id="emptyState" class="empty-state" hidden>
+        <div class="empty-icon" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+          </svg>
+        </div>
+        <h3>Nenhum chamado encontrado</h3>
+        <p id="emptyStateMessage">Não há registros para o filtro ou termo pesquisado no momento.</p>
+        <button type="button" id="emptyResetBtn" class="btn btn-outline">Limpar filtros</button>
+      </div>
+    </section>
+
+    <section class="api-inspector" id="apiInspector" aria-label="Raio-X da API para aprendizado">
+      <div class="inspector-bar">
+        <div class="inspector-info">
+          <span class="inspector-title">Raio-X da API</span>
+          <span class="verb-badge" id="inspectorVerb">GET</span>
+          <code class="inspector-path" id="inspectorPath">/api/incidents</code>
+          <span class="status-code-badge" id="inspectorStatus">200</span>
+          <span class="inspector-latency" id="inspectorLatency">0 ms</span>
+          <span class="inspector-explain" id="inspectorExplain">Carregando fila de chamados...</span>
+        </div>
+
+        <div class="inspector-actions">
+          <button type="button" class="btn btn-xs btn-ghost" id="toggleJsonBtn" aria-expanded="false">
+            Ver JSON
+          </button>
+          <a href="/swagger" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost">
+            Abrir Swagger ↗
+          </a>
+        </div>
+      </div>
+
+      <pre class="inspector-json" id="apiJsonPreview" hidden></pre>
+    </section>
+  </main>
+
+  <!-- Modal 1: Abrir Novo Chamado -->
+  <div class="modal-backdrop" id="createModal" hidden role="dialog" aria-modal="true" aria-labelledby="createModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h2 id="createModalTitle">Abrir Novo Chamado</h2>
+          <p class="modal-subtitle">Informe o problema encontrado para iniciar a contagem automática de SLA.</p>
+        </div>
+        <button type="button" class="icon-close" data-close-modal="createModal" aria-label="Fechar janela">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="createTicketForm" novalidate>
+        <div class="modal-body">
+          <div id="createErrorBox" class="form-error-box" hidden role="alert"></div>
+
+          <div class="form-group">
+            <label for="ticketTitle">Título do problema <span class="req">*</span></label>
+            <input
+              type="text"
+              id="ticketTitle"
+              name="title"
+              required
+              minlength="5"
+              maxlength="120"
+              placeholder="Ex.: Erro ao gerar guia de internação no sistema"
+            >
+            <span class="field-hint">Resumo curto e claro (entre 5 e 120 caracteres).</span>
+          </div>
+
+          <div class="form-group">
+            <label for="servicePreset">Sistema hospitalar afetado <span class="req">*</span></label>
+            <select id="servicePreset" name="servicePreset">
+              <option value="AutorizacaoMedica">Autorização Médica (Convênios / TISS)</option>
+              <option value="PortalDoMedico">Portal do Médico</option>
+              <option value="ProntuarioEletronico">Prontuário Eletrônico do Paciente</option>
+              <option value="LaboratorioExames">Laboratório e Resultados de Exames</option>
+              <option value="FaturamentoTISS">Faturamento Hospitalar TISS</option>
+              <option value="__custom__">Outro sistema...</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="customServiceGroup" hidden>
+            <label for="customServiceInput">Nome do sistema afetado <span class="req">*</span></label>
+            <input
+              type="text"
+              id="customServiceInput"
+              maxlength="80"
+              placeholder="Ex.: FarmaciaCentral, RecepçãoProntoSocorro"
+            >
+          </div>
+
+          <fieldset class="form-group">
+            <legend>Urgência e prazo de atendimento (SLA) <span class="req">*</span></legend>
+            <div class="priority-grid" id="prioritySelector">
+              <label class="priority-option is-critica">
+                <input type="radio" name="priority" value="Critica">
+                <span class="priority-option-top">
+                  <strong>Crítica</strong>
+                  <span class="sla-tag">1 hora</span>
+                </span>
+                <span class="priority-option-desc">Sistema parado ou risco direto ao paciente</span>
+              </label>
+
+              <label class="priority-option is-alta is-selected">
+                <input type="radio" name="priority" value="Alta" checked>
+                <span class="priority-option-top">
+                  <strong>Alta</strong>
+                  <span class="sla-tag">4 horas</span>
+                </span>
+                <span class="priority-option-desc">Lentidão severa ou falha em setor chave</span>
+              </label>
+
+              <label class="priority-option is-media">
+                <input type="radio" name="priority" value="Media">
+                <span class="priority-option-top">
+                  <strong>Média</strong>
+                  <span class="sla-tag">8 horas</span>
+                </span>
+                <span class="priority-option-desc">Erro pontual com alternativa operacional</span>
+              </label>
+
+              <label class="priority-option is-baixa">
+                <input type="radio" name="priority" value="Baixa">
+                <span class="priority-option-top">
+                  <strong>Baixa</strong>
+                  <span class="sla-tag">24 horas</span>
+                </span>
+                <span class="priority-option-desc">Ajuste simples ou dúvida sem urgência</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label for="ticketDescription">Descrição detalhada <span class="req">*</span></label>
+              <span class="char-counter" id="descriptionCount">0 / 1000</span>
+            </div>
+            <textarea
+              id="ticketDescription"
+              name="description"
+              rows="4"
+              required
+              minlength="10"
+              maxlength="1000"
+              placeholder="Descreva o que aconteceu, em qual unidade ou tela o erro aparece e quantos usuários foram afetados..."
+            ></textarea>
+            <span class="field-hint">Mínimo de 10 caracteres para ajudar a equipe N2 a diagnosticar rápido.</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="createModal">Cancelar</button>
+          <button type="submit" id="submitCreateBtn" class="btn btn-primary">Criar Chamado</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Detalhes do Chamado -->
+  <div class="modal-backdrop" id="detailModal" hidden role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <div class="detail-header-badges" id="detailBadges"></div>
+        <button type="button" class="icon-close" data-close-modal="detailModal" aria-label="Fechar detalhes">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" id="detailBody">
+        <h2 id="detailTitle" class="detail-title"></h2>
+        <div class="detail-meta-row" id="detailMetaRow"></div>
+
+        <div class="detail-section">
+          <h4>O que está acontecendo</h4>
+          <p id="detailDescription" class="detail-description"></p>
+        </div>
+
+        <div class="detail-section">
+          <h4>Linha do tempo e SLA</h4>
+          <div class="timeline-grid" id="detailTimeline"></div>
+        </div>
+
+        <div class="detail-id-box">
+          <span class="detail-id-label">Código único (ID):</span>
+          <code id="detailTicketId"></code>
+          <button type="button" id="copyIdBtn" class="btn btn-xs btn-outline">Copiar ID</button>
+        </div>
+      </div>
+
+      <div class="modal-footer" id="detailFooterActions"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

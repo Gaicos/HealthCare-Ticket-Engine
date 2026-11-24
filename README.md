@@ -1,1 +1,182 @@
 # HealthCare-Ticket-Engine
+
+![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet)
+![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-Web%20API-512BD4?style=flat-square)
+![Swagger / OpenAPI](https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?style=flat-square&logo=swagger&logoColor=black)
+![C#](https://img.shields.io/badge/C%23-12-239120?style=flat-square&logo=csharp)
+
+[🇧🇷 Português](#-português) | [🇺🇸 English](#-english)
+
+---
+
+## 🇧🇷 Português
+
+API RESTful em **ASP.NET Core (.NET 8)** projetada para **gestão, triagem e sustentação N2 de incidentes em sistemas de saúde e operações hospitalares** (autorização médica, prontuário eletrônico, portal do médico e integrações TISS/TUSS).
+
+### 🎯 Foco em Sustentação N2 e SLAs
+
+Em ambientes hospitalares críticos, a velocidade de triagem impacta diretamente o atendimento assistencial. A engine ordena automaticamente a fila por **severidade decrescente** (`Critica` → `Baixa`) e **ordem de chegada** (`CreatedAt` crescente), calculando em tempo real o prazo limite (`SlaDeadline`) e o indicador de estouro (`IsSlaBreached`):
+
+| Prioridade | Meta de SLA N2 | Cenário Hospitalar Típico |
+| :--- | :--- | :--- |
+| `Critica` | **1 hora** | Parada total de autorização médica, pronto-socorro ou prontuário |
+| `Alta` | **4 horas** | Lentidão severa ou falhas parciais no Portal do Médico / exames |
+| `Media` | **8 horas** | Erros pontuais em guias eletivas com contorno operacional |
+| `Baixa` | **24 horas** | Ajustes cadastrais, dúvidas técnicas ou melhorias sem impacto assistencial |
+
+### 🧱 Arquitetura e Padrões Aplicados
+
+- **Painel Web Amigável (`wwwroot/`)**: Interface visual moderna servida diretamente pela aplicação em `/` para usuários não técnicos acompanharem KPIs, filtrarem chamados, abrirem novos incidentes e visualizarem prazos de SLA em tempo real — com barra **Raio-X da API** para aprendizado das chamadas HTTP (`GET`, `POST`, `PUT`) e acesso rápido ao Swagger.
+- **Controllers + DTOs + Validação**: Separação entre o modelo de domínio (`IncidentTicket`) e o contrato de entrada (`CreateIncidentRequest`) com `DataAnnotations` e serialização de enums em string (`JsonStringEnumConverter`).
+- **Repository Pattern + Injeção de Dependência**: Contrato `IIncidentRepository` desacoplado da implementação `InMemoryIncidentRepository` (base thread-safe com `ConcurrentDictionary` e dados iniciais seedados), registrado no `Program.cs` com `.AddScoped<IIncidentRepository, InMemoryIncidentRepository>()` — pronto para futura substituição por Entity Framework Core sem alterar os controllers.
+- **Tratamento Global de Exceções (`.NET 8 IExceptionHandler`)**: `GlobalExceptionHandler` captura exceções não tratadas e violações de regra de negócio (como tentar resolver um incidente já encerrado), retornando JSON padronizado no formato **RFC 7807 (`ProblemDetails`)** com `traceId` e `timestamp`.
+- **Documentação Interativa (Swagger / OpenAPI)**: Especificação completa gerada a partir de comentários XML e anotações `[ProducesResponseType]`.
+
+#### Estrutura de Pastas
+
+```text
+HealthCare-Ticket-Engine/
+├── Controllers/
+│   └── IncidentsController.cs
+├── DTOs/
+│   └── CreateIncidentRequest.cs
+├── Middlewares/
+│   └── GlobalExceptionHandler.cs
+├── Models/
+│   ├── IncidentEnums.cs
+│   └── IncidentTicket.cs
+├── Repositories/
+│   ├── IIncidentRepository.cs
+│   └── InMemoryIncidentRepository.cs
+├── wwwroot/
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
+├── Program.cs
+├── HealthCare-Ticket-Engine.csproj
+├── HealthCare-Ticket-Engine.http
+└── README.md
+```
+
+### 🚀 Como Executar
+
+Pré-requisito: [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+
+```powershell
+git clone https://github.com/Gaicos/HealthCare-Ticket-Engine.git
+cd HealthCare-Ticket-Engine
+dotnet restore
+dotnet run
+```
+
+Acesse no navegador:
+
+- **Painel Web (Front-End)**: `http://localhost:5214/`
+- **API Técnica (Swagger UI)**: `http://localhost:5214/swagger` (ou `https://localhost:7074/swagger` com o perfil HTTPS)
+
+### 📡 Endpoints da API
+
+| Método | Rota | Descrição | Respostas |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/incidents` | Lista todos os incidentes ordenados por prioridade e antiguidade. Aceita filtro `?status=Aberto\|EmAnalise\|Resolvido` | `200`, `400` |
+| `GET` | `/api/incidents/{id}` | Busca um incidente específico pelo `Guid` | `200`, `400`, `404` |
+| `POST` | `/api/incidents` | Cria um novo incidente N2 com cálculo automático de SLA | `201`, `400` |
+| `PUT` | `/api/incidents/{id}/analyze` | Move um incidente `Aberto` para `EmAnalise` | `200`, `404`, `409` |
+| `PUT` | `/api/incidents/{id}/resolve` | Marca o incidente como `Resolvido` e grava `ResolvedAt` (UTC) | `200`, `404`, `409` |
+
+#### Exemplo de Payload (`POST /api/incidents`)
+
+```json
+{
+  "title": "Falha na autorização de exames de imagem",
+  "description": "Integração TISS retorna timeout intermitente no setor de radiologia.",
+  "priority": "Critica",
+  "serviceAffected": "AutorizacaoMedica"
+}
+```
+
+#### Exemplo de Resposta de Erro (`409 Conflict` / `ProblemDetails`)
+
+```json
+{
+  "title": "Conflito de estado do incidente",
+  "status": 409,
+  "detail": "O incidente '11111111-1111-1111-1111-111111111111' já foi resolvido em 2026-11-24T14:55:00.0000000Z.",
+  "instance": "/api/incidents/11111111-1111-1111-1111-111111111111/resolve",
+  "traceId": "0HN...",
+  "timestamp": "2026-11-24T14:55:05Z"
+}
+```
+
+### 🗺️ Roadmap
+
+- [ ] Persistência com Entity Framework Core (SQL Server / PostgreSQL)
+- [ ] Testes unitários e de integração com xUnit + WebApplicationFactory
+- [ ] Containerização com Docker e Docker Compose
+- [ ] Transição explícita para `EmAnalise` e registro de notas de atendimento N2
+
+---
+
+## 🇺🇸 English
+
+RESTful API built with **ASP.NET Core (.NET 8)** for **Level 2 (N2) incident management, triage, and SLA tracking in healthcare and hospital operations** (medical authorization, EHR, physician portal, and healthcare integration pipelines).
+
+### 🎯 N2 Operations & SLA Focus
+
+In mission-critical healthcare environments, triage speed directly affects patient care workflows. The engine automatically sorts the queue by **highest severity first** (`Critica` → `Baixa`) and **oldest ticket first** (`CreatedAt` ascending), while computing the SLA target (`SlaDeadline`) and breach status (`IsSlaBreached`) in real time:
+
+| Priority | N2 SLA Target | Typical Healthcare Scenario |
+| :--- | :--- | :--- |
+| `Critica` | **1 hour** | Total outage of medical authorization, ER intake, or EHR |
+| `Alta` | **4 hours** | Severe latency or partial failures in Physician Portal / lab results |
+| `Media` | **8 hours** | Isolated errors in elective workflows with operational workarounds |
+| `Baixa` | **24 hours** | Configuration tweaks, technical questions, or non-blocking issues |
+
+### 🧱 Architecture & Design Patterns
+
+- **User-Friendly Web Dashboard (`wwwroot/`)**: Clean clinical dashboard served directly at `/` so non-technical users can monitor KPIs, filter tickets, open new incidents, and track SLA countdowns — with a live **API X-Ray** learning bar (`GET`, `POST`, `PUT`) and one-click access to Swagger UI.
+- **Controllers + DTOs + Validation**: Clear separation between domain entity (`IncidentTicket`) and input contract (`CreateIncidentRequest`) using `DataAnnotations` and string-based enum JSON serialization (`JsonStringEnumConverter`).
+- **Repository Pattern + Dependency Injection**: `IIncidentRepository` decoupled from `InMemoryIncidentRepository` (thread-safe `ConcurrentDictionary` preloaded with realistic seed tickets), registered in `Program.cs` via `.AddScoped<IIncidentRepository, InMemoryIncidentRepository>()` — ready to swap for an EF Core `DbContext` without touching controllers.
+- **Global Exception Handling (`.NET 8 IExceptionHandler`)**: `GlobalExceptionHandler` intercepts unhandled failures and domain conflicts (e.g., resolving an already-resolved ticket) and returns clean **RFC 7807 `ProblemDetails`** JSON payloads enriched with `traceId` and `timestamp`.
+- **Interactive Documentation (Swagger / OpenAPI)**: Full OpenAPI spec powered by XML doc comments and `[ProducesResponseType]` metadata.
+
+### 🚀 Getting Started
+
+Prerequisite: [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+
+```powershell
+git clone https://github.com/Gaicos/HealthCare-Ticket-Engine.git
+cd HealthCare-Ticket-Engine
+dotnet restore
+dotnet run
+```
+
+Open in your browser:
+
+- **Web Dashboard**: `http://localhost:5214/`
+- **Technical API (Swagger UI)**: `http://localhost:5214/swagger` (or `https://localhost:7074/swagger` when using the HTTPS profile)
+
+### 📡 API Endpoints
+
+| Method | Route | Description | Status Codes |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/incidents` | Lists all incidents ordered by priority and age. Optional `?status=Aberto\|EmAnalise\|Resolvido` filter | `200`, `400` |
+| `GET` | `/api/incidents/{id}` | Retrieves a single incident by `Guid` | `200`, `400`, `404` |
+| `POST` | `/api/incidents` | Creates a new N2 incident with automatic SLA deadline calculation | `201`, `400` |
+| `PUT` | `/api/incidents/{id}/analyze` | Moves an `Aberto` incident to `EmAnalise` | `200`, `404`, `409` |
+| `PUT` | `/api/incidents/{id}/resolve` | Marks an incident as `Resolvido` and sets `ResolvedAt` (UTC) | `200`, `404`, `409` |
+
+#### Sample Request (`POST /api/incidents`)
+
+```json
+{
+  "title": "Imaging authorization service returning timeouts",
+  "description": "TISS integration gateway is intermittently timing out for radiology orders.",
+  "priority": "Critica",
+  "serviceAffected": "AutorizacaoMedica"
+}
+```
+
+### 👤 Author / Autor
+
+**João** — [github.com/Gaicos](https://github.com/Gaicos)

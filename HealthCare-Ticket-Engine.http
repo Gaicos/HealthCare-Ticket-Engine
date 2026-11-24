@@ -1,0 +1,36 @@
+@HealthCare_Ticket_Engine_HostAddress = http://localhost:5214
+
+### Listar todos os incidentes (ordenados por prioridade e antiguidade)
+GET {{HealthCare_Ticket_Engine_HostAddress}}/api/incidents
+Accept: application/json
+
+### Filtrar incidentes por status (Aberto, EmAnalise, Resolvido)
+GET {{HealthCare_Ticket_Engine_HostAddress}}/api/incidents?status=Aberto
+Accept: application/json
+
+### Buscar incidente seedado por ID (200 OK)
+GET {{HealthCare_Ticket_Engine_HostAddress}}/api/incidents/11111111-1111-1111-1111-111111111111
+Accept: application/json
+
+### Buscar incidente inexistente (404 Not Found)
+GET {{HealthCare_Ticket_Engine_HostAddress}}/api/incidents/99999999-9999-9999-9999-999999999999
+Accept: application/json
+
+### Criar novo incidente N2 (201 Created)
+POST {{HealthCare_Ticket_Engine_HostAddress}}/api/incidents
+Content-Type: application/json
+
+{
+  "title": "Erro 500 na validação de carteirinha do convênio",
+  "description": "Recepção da emergência não consegue validar elegibilidade de pacientes do convênio parceiro.",
+  "priority": "Critica",
+  "serviceAffected": "AutorizacaoMedica"
+}
+
+### Mover incidente aberto para EmAnalise (200 OK; chamada duplicada ou já resolvido retorna 409 Conflict)
+PUT {{HealthCare_Ticket_Engine_HostAddress}}/api/incidents/11111111-1111-1111-1111-111111111111/analyze
+Accept: application/json
+
+### Resolver incidente existente (200 OK; segunda chamada retorna 409 Conflict)
+PUT {{HealthCare_Ticket_Engine_HostAddress}}/api/incidents/11111111-1111-1111-1111-111111111111/resolve
+Accept: application/json
