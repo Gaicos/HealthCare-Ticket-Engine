@@ -5,6 +5,7 @@
 ![Swagger / OpenAPI](https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?style=flat-square&logo=swagger&logoColor=black)
 ![C#](https://img.shields.io/badge/C%23-12-239120?style=flat-square&logo=csharp)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Livro Didático](https://img.shields.io/badge/Livro%20Didático-12%20Capítulos-0F766E?style=flat-square)
 
 [🇧🇷 Português](#-português) | [🇺🇸 English](#-english)
 
@@ -53,6 +54,8 @@ HealthCare-Ticket-Engine/
 │   ├── index.html
 │   ├── styles.css
 │   └── app.js
+├── docs/
+│   └── livro/          # Livro didático completo (12 capítulos + apêndice + PDF/HTML)
 ├── Dockerfile
 ├── .dockerignore
 ├── render.yaml
@@ -141,6 +144,14 @@ Acesse `http://localhost:8080/` (ou `http://localhost:8080/swagger`).
 - [ ] Testes unitários e de integração com xUnit + WebApplicationFactory
 - [ ] Registro de notas de atendimento N2 e histórico de comentários
 
+### 📚 Livro Didático Completo (Do Zero ao Ar em Produção)
+
+Quer aprender como cada arquivo deste projeto foi construído **linha por linha** — começando pela lógica de programação básica até API REST, Painel Web, Docker e Deploy na Nuvem? Acesse o livro didático dentro do próprio repositório:
+
+- 📖 [Sumário Navegável — 12 Capítulos + Apêndice](docs/livro/README.md)
+- 📄 [LIVRO-COMPLETO.md (Leitura contínua direto no GitHub)](docs/livro/LIVRO-COMPLETO.md)
+- 🌐 [LIVRO-COMPLETO.html (Leitor interativo com temas e impressão em PDF)](docs/livro/LIVRO-COMPLETO.html)
+
 ---
 
 ## 🇺🇸 English
@@ -213,6 +224,14 @@ docker run -p 8080:8080 healthcare-ticket-engine
   "serviceAffected": "AutorizacaoMedica"
 }
 ```
+
+### 📚 Complete Step-by-Step Book (Portuguese)
+
+Want to learn how every single file in this repository works from programming fundamentals to .NET 8 Web API, Front-End, Docker, and Cloud Deploy?
+
+- 📖 [Table of Contents — 12 Chapters + Appendix](docs/livro/README.md)
+- 📄 [LIVRO-COMPLETO.md (Continuous GitHub reading)](docs/livro/LIVRO-COMPLETO.md)
+- 🌐 [LIVRO-COMPLETO.html (Interactive reader & PDF export)](docs/livro/LIVRO-COMPLETO.html)
 
 ### 👤 Author / Autor
 
